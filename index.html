@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Weather App</title>
+  <style>
+
+    body {
+      background-color: #ffffff;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .tarjeta {
+      background-color: #f5f5f5;
+      border: 1px solid #e0e0e0;
+      padding: 40px;
+      text-align: center;
+      color: white;
+      width: 280px;
+      border: 1px solid #222;
+   
+    }
+
+    .ciudad {
+      font-size: 14px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .icono {
+      font-size: 48px;
+      margin: 12px 0 4px;
+      color: #ff2b2b;
+      filter: grayscale(1) sepia(1) saturate(10) hue-rotate(310deg);
+    }
+
+    .temperatura {
+      font-size: 80px;
+      font-weight: 500;
+      margin: 4px 0;
+      color: #111;
+    }
+
+    .condicion {
+      font-size: 16px;
+      color: #ff2b2b;
+      margin-bottom: 8px;
+      text-transform: capitalize;
+    }
+
+    .frase {
+      font-size: 13px;
+      color: #555;
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      border-top: 1px solid #ddd;
+      padding-top: 16px;
+      margin-top: 4px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-valor {
+      font-size: 18px;
+      font-weight: 500;
+      color: #111;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    input {
+      margin-top: 20px;
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: 1px solid #ddd;
+      background: #fff;
+      color: #111;
+      font-size: 14px;
+      text-align: center;
+      outline: none;
+      width: 180px;
+    }
+
+    input:focus {
+      border-color: #ff2b2b;
+    }
+
+    input::placeholder {
+      color: #444;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="tarjeta">
+    <p class="ciudad" id="ciudad">--</p>
+    <p class="icono" id="icono">--</p>
+    <p class="temperatura" id="temperatura">--°</p>
+    <p class="condicion" id="condicion">--</p>
+    <p class="frase" id="frase">--</p>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-valor" id="sensacion">--°</div>
+        <div class="stat-label">Sensación</div>
+      </div>
+      <div class="stat">
+        <div class="stat-valor" id="humedad">--%</div>
+        <div class="stat-label">Humedad</div>
+      </div>
+      <div class="stat">
+        <div class="stat-valor" id="viento">-- km/h</div>
+        <div class="stat-label">Viento</div>
+      </div>
+    </div>
+
+    <input type="text" id="input-ciudad" placeholder="Escribe una ciudad..." />
+  </div>
+
+  <script>
+    const API_KEY = "bd5e378503939ddaee76f12ad7a97608";
+
+    const frases = {
+      clear:        "El sol no tiene moderación hoy.",
+      clouds:       "El cielo no se ha decidido todavía.",
+      rain:         "El paraguas que dejaste en casa te saluda.",
+      drizzle:      "Técnicamente no llueve. Técnicamente.",
+      thunderstorm: "La naturaleza está de mal humor.",
+      snow:         "El invierno llegó sin avisar.",
+      mist:         "La ciudad está en modo misterioso.",
+      default:      "Viste en capas. Siempre en capas."
+    };
+
+    const iconos = {
+      clear:        "☀️",
+      clouds:       "☁️",
+      rain:         "🌧️",
+      drizzle:      "🌦️",
+      thunderstorm: "⛈️",
+      snow:         "❄️",
+      mist:         "🌫️",
+      default:      "🌈"
+    };
+
+    const fondos = {
+      clear: "#FFD700",
+      clouds: "#C0C0C0",
+      rain: "#4682B4",
+      drizzle: "#87CEEB",
+      thunderstorm: "#4B0082",
+      snow: "#F0F8FF",
+      mist: "#F5F5F5"
+    };
+
+
+    function obtenerClave(descripcion) {
+      const d = descripcion.toLowerCase();
+      if (d.includes("clear"))     return "clear";
+      if (d.includes("cloud"))     return "clouds";
+      if (d.includes("rain"))      return "rain";
+      if (d.includes("drizzle"))   return "drizzle";
+      if (d.includes("thunder"))   return "thunderstorm";
+      if (d.includes("snow"))      return "snow";
+      if (d.includes("mist") || d.includes("fog")) return "mist";
+      return "default";
+    }
+
+    async function buscarClima(ciudad) {
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad}&appid=${API_KEY}&units=metric&lang=es`;
+      const respuesta = await fetch(url);
+      const datos = await respuesta.json();
+
+      if (datos.cod !== 200) {
+        document.getElementById("ciudad").textContent = "Ciudad no encontrada";
+        return;
+      }
+
+      const clave = obtenerClave(datos.weather[0].main);
+
+      document.getElementById("ciudad").textContent      = `${datos.name}, ${datos.sys.country}`;
+      document.getElementById("icono").textContent       = iconos[clave];
+      document.getElementById("temperatura").textContent = `${Math.round(datos.main.temp)}°`;
+      document.getElementById("condicion").textContent   = datos.weather[0].description;
+      document.getElementById("frase").textContent       = frases[clave];
+      document.getElementById("sensacion").textContent   = `${Math.round(datos.main.feels_like)}°`;
+      document.getElementById("humedad").textContent     = `${datos.main.humidity}%`;
+      document.getElementById("viento").textContent      = `${Math.round(datos.wind.speed * 3.6)} km/h`;
+      document.querySelector(".tarjeta").style.backgroundColor = fondos[clave];
+    }
+  
+
+  
+
+    document.getElementById("input-ciudad").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        buscarClima(this.value);
+      }
+    });
+
+    buscarClima("Barcelona");
+    document.body.style.backgroundColor = "Aquí va un color dinámico basado en el clima";
+
+  </script>
+
+</body>
+</html>
+
+
+
+
+
