@@ -186,28 +186,41 @@
     }
 
     async function buscarClima(ciudad) {
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad}&appid=${API_KEY}&units=metric&lang=es`;
-      const respuesta = await fetch(url);
-      const datos = await respuesta.json();
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad}&appid=${API_KEY}&units=metric&lang=es`;
+  const respuesta = await fetch(url);
+  const datos = await respuesta.json();
 
-      if (datos.cod !== 200) {
-        document.getElementById("ciudad").textContent = "Ciudad no encontrada";
-        return;
-      }
+  if (datos.cod !== 200) {
+    document.getElementById("ciudad").textContent = "Ciudad no encontrada";
+    return;
+  }
 
-      const clave = obtenerClave(datos.weather[0].main);
+  const clave = obtenerClave(datos.weather[0].main);
+  const temp = Math.round(datos.main.temp);
 
-      document.getElementById("ciudad").textContent      = `${datos.name}, ${datos.sys.country}`;
-      document.getElementById("icono").textContent       = iconos[clave];
-      document.getElementById("temperatura").textContent = `${Math.round(datos.main.temp)}°`;
-      document.getElementById("condicion").textContent   = datos.weather[0].description;
-      document.getElementById("frase").textContent       = frases[clave];
-      document.getElementById("sensacion").textContent   = `${Math.round(datos.main.feels_like)}°`;
-      document.getElementById("humedad").textContent     = `${datos.main.humidity}%`;
-      document.getElementById("viento").textContent      = `${Math.round(datos.wind.speed * 3.6)} km/h`;
-      document.querySelector(".tarjeta").style.backgroundColor = fondos[clave];
-    }
+  let fraseTemp;
+  if (temp > 30) {
+    fraseTemp = "Estoy a dos grados de convertirme en gazpacho";
+  } else if (temp > 20) {
+    fraseTemp = "Hoy sí se puede existir dignamente";
+  } else if (temp > 10) {
+    fraseTemp = "Hace frío hasta para pensar";
+  } else {
+    fraseTemp = "El café ya no es bebida, es supervivencia";
+  }
+
+  document.getElementById("ciudad").textContent = `${datos.name}, ${datos.sys.country}`;
+  document.getElementById("icono").textContent = iconos[clave];
+  document.getElementById("temperatura").textContent = `${temp}°`;
+  document.getElementById("condicion").textContent = datos.weather[0].description;
+  document.getElementById("frase").textContent = fraseTemp;
+  document.getElementById("sensacion").textContent = `${Math.round(datos.main.feels_like)}°`;
+  document.getElementById("humedad").textContent = `${datos.main.humidity}%`;
+  document.getElementById("viento").textContent = `${Math.round(datos.wind.speed * 3.6)} km/h`;
+  document.querySelector(".tarjeta").style.backgroundColor = fondos[clave];
+}
   
+
 
   
 
@@ -218,7 +231,6 @@
     });
 
     buscarClima("Barcelona");
-    document.body.style.backgroundColor = "Aquí va un color dinámico basado en el clima";
 
   </script>
 
