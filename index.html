@@ -22,8 +22,6 @@
       text-align: center;
       color: white;
       width: 280px;
-      border: 1px solid #222;
-   
     }
 
     .ciudad {
@@ -36,8 +34,6 @@
     .icono {
       font-size: 48px;
       margin: 12px 0 4px;
-      color: #ff2b2b;
-      filter: grayscale(1) sepia(1) saturate(10) hue-rotate(310deg);
     }
 
     .temperatura {
@@ -87,8 +83,21 @@
       margin-top: 2px;
     }
 
+    button {
+      margin-top: 16px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid #ff2b2b;
+      background: transparent;
+      color: #ff2b2b;
+      font-size: 13px;
+      cursor: pointer;
+      display: block;
+      width: 100%;
+    }
+
     input {
-      margin-top: 20px;
+      margin-top: 10px;
       padding: 10px 16px;
       border-radius: 20px;
       border: 1px solid #ddd;
@@ -133,23 +142,15 @@
         <div class="stat-label">Viento</div>
       </div>
     </div>
+
     <div id="prediccion"></div>
+
+    <button onclick="buscarPorUbicacion()">Usar mi ubicación</button>
     <input type="text" id="input-ciudad" placeholder="Escribe una ciudad..." />
   </div>
 
   <script>
     const API_KEY = "bd5e378503939ddaee76f12ad7a97608";
-
-    const frases = {
-      clear:        "El sol no tiene moderación hoy.",
-      clouds:       "El cielo no se ha decidido todavía.",
-      rain:         "El paraguas que dejaste en casa te saluda.",
-      drizzle:      "Técnicamente no llueve. Técnicamente.",
-      thunderstorm: "La naturaleza está de mal humor.",
-      snow:         "El invierno llegó sin avisar.",
-      mist:         "La ciudad está en modo misterioso.",
-      default:      "Viste en capas. Siempre en capas."
-    };
 
     const iconos = {
       clear:        "☀️",
@@ -163,15 +164,14 @@
     };
 
     const fondos = {
-      clear: "#FFD700",
-      clouds: "#C0C0C0",
-      rain: "#4682B4",
-      drizzle: "#87CEEB",
+      clear:        "#FFD700",
+      clouds:       "#C0C0C0",
+      rain:         "#4682B4",
+      drizzle:      "#87CEEB",
       thunderstorm: "#4B0082",
-      snow: "#F0F8FF",
-      mist: "#F5F5F5"
+      snow:         "#F0F8FF",
+      mist:         "#F5F5F5"
     };
-
 
     function obtenerClave(descripcion) {
       const d = descripcion.toLowerCase();
@@ -185,72 +185,89 @@
       return "default";
     }
 
-    async function buscarClima(ciudad) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad}&appid=${API_KEY}&units=metric&lang=es`;
-  const respuesta = await fetch(url);
-  const datos = await respuesta.json();
+    async function buscarClima(ciudad, lat, lon) {
+      let url;
+      let urlPrediccion;
 
-  if (datos.cod !== 200) {
-    document.getElementById("ciudad").textContent = "Ciudad no encontrada";
-    return;
-  }
-    const urlPrediccion = `https://api.openweathermap.org/data/2.5/forecast?q=${ciudad}&appid=${API_KEY}&units=metric&lang=es`;
-    const respuestaPrediccion = await fetch(urlPrediccion);
-    const datosPrediccion = await respuestaPrediccion.json();
-    const clave = obtenerClave(datos.weather[0].main);
-    const temp = Math.round(datos.main.temp);
-    const diasMap = {};
-datosPrediccion.list.forEach(entry => {
-  const fecha = entry.dt_txt.split(" ")[0];
-  const hora = entry.dt_txt.split(" ")[1];
-  if (hora === "12:00:00" && !diasMap[fecha]) {
-    diasMap[fecha] = entry;
-  }
-});
-const dias = Object.values(diasMap).slice(0, 5);
+      if (lat && lon) {
+        url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=es`;
+        urlPrediccion = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric&lang=es`;
+      } else {
+        url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad}&appid=${API_KEY}&units=metric&lang=es`;
+        urlPrediccion = `https://api.openweathermap.org/data/2.5/forecast?q=${ciudad}&appid=${API_KEY}&units=metric&lang=es`;
+      }
 
-  let fraseTemp;
-  if (temp > 30) {
-    fraseTemp = "Estoy a dos grados de convertirme en gazpacho";
-  } else if (temp > 20) {
-    fraseTemp = "Hoy sí se puede existir dignamente";
-  } else if (temp > 10) {
-    fraseTemp = "Hace frío hasta para pensar";
-  } else {
-    fraseTemp = "El café ya no es bebida, es supervivencia";
-  }
+      const respuesta = await fetch(url);
+      const datos = await respuesta.json();
 
-  document.getElementById("ciudad").textContent = `${datos.name}, ${datos.sys.country}`;
-  document.getElementById("icono").textContent = iconos[clave];
-  document.getElementById("temperatura").textContent = `${temp}°`;
-  document.getElementById("condicion").textContent = datos.weather[0].description;
-  document.getElementById("frase").textContent = fraseTemp;
-  document.getElementById("sensacion").textContent = `${Math.round(datos.main.feels_like)}°`;
-  document.getElementById("humedad").textContent = `${datos.main.humidity}%`;
-  document.getElementById("viento").textContent = `${Math.round(datos.wind.speed * 3.6)} km/h`;
-  document.querySelector(".tarjeta").style.backgroundColor = fondos[clave];
-  const nombresdia = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-let htmlDias = `<div style="border-top: 1px solid #ddd; margin-top: 16px; padding-top: 16px;">`;
-dias.forEach(dia => {
-  const fecha = new Date(dia.dt_txt);
-  const nombre = nombresdia[fecha.getDay()];
-  const claveDia = obtenerClave(dia.weather[0].main);
-  const max = Math.round(dia.main.temp_max);
-  const min = Math.round(dia.main.temp_min);
-  htmlDias += `
-    <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 0; font-size:13px; color:#111; border-bottom: 1px solid #eee;">
-      <span style="width:30px">${nombre}</span>
-      <span>${iconos[claveDia]}</span>
-      <span style="color:#111">${max}° / <span style="color:#999">${min}°</span></span>
-    </div>`;
-});
-htmlDias += `</div>`;
-document.getElementById("prediccion").innerHTML = htmlDias;
-}
-  
+      if (datos.cod !== 200) {
+        document.getElementById("ciudad").textContent = "Ciudad no encontrada";
+        return;
+      }
 
+      const respuestaPrediccion = await fetch(urlPrediccion);
+      const datosPrediccion = await respuestaPrediccion.json();
 
-  
+      const clave = obtenerClave(datos.weather[0].main);
+      const temp = Math.round(datos.main.temp);
+
+      let fraseTemp;
+      if (temp > 30) {
+        fraseTemp = "Estoy a dos grados de convertirme en gazpacho";
+      } else if (temp > 20) {
+        fraseTemp = "Hoy sí se puede existir dignamente";
+      } else if (temp > 10) {
+        fraseTemp = "Hace frío hasta para pensar";
+      } else {
+        fraseTemp = "El café ya no es bebida, es supervivencia";
+      }
+
+      document.getElementById("ciudad").textContent = `${datos.name}, ${datos.sys.country}`;
+      document.getElementById("icono").textContent = iconos[clave];
+      document.getElementById("temperatura").textContent = `${temp}°`;
+      document.getElementById("condicion").textContent = datos.weather[0].description;
+      document.getElementById("frase").textContent = fraseTemp;
+      document.getElementById("sensacion").textContent = `${Math.round(datos.main.feels_like)}°`;
+      document.getElementById("humedad").textContent = `${datos.main.humidity}%`;
+      document.getElementById("viento").textContent = `${Math.round(datos.wind.speed * 3.6)} km/h`;
+      document.querySelector(".tarjeta").style.backgroundColor = fondos[clave];
+
+      const diasMap = {};
+      datosPrediccion.list.forEach(entry => {
+        const fecha = entry.dt_txt.split(" ")[0];
+        const hora = entry.dt_txt.split(" ")[1];
+        if (hora === "12:00:00" && !diasMap[fecha]) {
+          diasMap[fecha] = entry;
+        }
+      });
+      const dias = Object.values(diasMap).slice(0, 5);
+
+      const nombresdia = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+      let htmlDias = `<div style="border-top: 1px solid #ddd; margin-top: 16px; padding-top: 16px;">`;
+      dias.forEach(dia => {
+        const fecha = new Date(dia.dt_txt);
+        const nombre = nombresdia[fecha.getDay()];
+        const claveDia = obtenerClave(dia.weather[0].main);
+        const max = Math.round(dia.main.temp_max);
+        const min = Math.round(dia.main.temp_min);
+        htmlDias += `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 0; font-size:13px; color:#111; border-bottom: 1px solid #eee;">
+            <span style="width:30px">${nombre}</span>
+            <span>${iconos[claveDia]}</span>
+            <span style="color:#111">${max}° / <span style="color:#999">${min}°</span></span>
+          </div>`;
+      });
+      htmlDias += `</div>`;
+      document.getElementById("prediccion").innerHTML = htmlDias;
+    }
+
+    function buscarPorUbicacion() {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        buscarClima(null, lat, lon);
+      });
+    }
 
     document.getElementById("input-ciudad").addEventListener("keydown", function(e) {
       if (e.key === "Enter") {
@@ -264,8 +281,4 @@ document.getElementById("prediccion").innerHTML = htmlDias;
 
 </body>
 </html>
-
-
-
-
 
