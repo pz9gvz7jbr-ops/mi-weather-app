@@ -133,7 +133,7 @@
         <div class="stat-label">Viento</div>
       </div>
     </div>
-
+    <div id="prediccion"></div>
     <input type="text" id="input-ciudad" placeholder="Escribe una ciudad..." />
   </div>
 
@@ -194,9 +194,20 @@
     document.getElementById("ciudad").textContent = "Ciudad no encontrada";
     return;
   }
-
-  const clave = obtenerClave(datos.weather[0].main);
-  const temp = Math.round(datos.main.temp);
+    const urlPrediccion = `https://api.openweathermap.org/data/2.5/forecast?q=${ciudad}&appid=${API_KEY}&units=metric&lang=es`;
+    const respuestaPrediccion = await fetch(urlPrediccion);
+    const datosPrediccion = await respuestaPrediccion.json();
+    const clave = obtenerClave(datos.weather[0].main);
+    const temp = Math.round(datos.main.temp);
+    const diasMap = {};
+datosPrediccion.list.forEach(entry => {
+  const fecha = entry.dt_txt.split(" ")[0];
+  const hora = entry.dt_txt.split(" ")[1];
+  if (hora === "12:00:00" && !diasMap[fecha]) {
+    diasMap[fecha] = entry;
+  }
+});
+const dias = Object.values(diasMap).slice(0, 5);
 
   let fraseTemp;
   if (temp > 30) {
@@ -218,6 +229,23 @@
   document.getElementById("humedad").textContent = `${datos.main.humidity}%`;
   document.getElementById("viento").textContent = `${Math.round(datos.wind.speed * 3.6)} km/h`;
   document.querySelector(".tarjeta").style.backgroundColor = fondos[clave];
+  const nombresdia = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+let htmlDias = `<div style="border-top: 1px solid #ddd; margin-top: 16px; padding-top: 16px;">`;
+dias.forEach(dia => {
+  const fecha = new Date(dia.dt_txt);
+  const nombre = nombresdia[fecha.getDay()];
+  const claveDia = obtenerClave(dia.weather[0].main);
+  const max = Math.round(dia.main.temp_max);
+  const min = Math.round(dia.main.temp_min);
+  htmlDias += `
+    <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 0; font-size:13px; color:#111; border-bottom: 1px solid #eee;">
+      <span style="width:30px">${nombre}</span>
+      <span>${iconos[claveDia]}</span>
+      <span style="color:#111">${max}° / <span style="color:#999">${min}°</span></span>
+    </div>`;
+});
+htmlDias += `</div>`;
+document.getElementById("prediccion").innerHTML = htmlDias;
 }
   
 
