@@ -4,65 +4,78 @@
   <meta charset="UTF-8">
   <title>Mi Weather App</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Serif+Display&display=swap');
 
     body {
-      background-color: #ffffff;
-      font-family: sans-serif;
+      background-color: #f7f7f5;
+      font-family: 'DM Sans', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
     }
 
     .tarjeta {
-      background-color: #f5f5f5;
-      border: 1px solid #e0e0e0;
-      padding: 40px;
-      text-align: center;
-      color: white;
-      width: 280px;
-    }
-
-    .ciudad {
-      font-size: 14px;
-      color: #999;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-
-    .icono {
-      font-size: 48px;
-      margin: 12px 0 4px;
-    }
-
-    .temperatura {
-      font-size: 80px;
-      font-weight: 500;
-      margin: 4px 0;
+      background-color: #ffffff;
+      border-radius: 28px;
+      border: 1px solid #eeeeee;
+      padding: 2rem 1.75rem;
+      width: 300px;
       color: #111;
     }
 
+    .ciudad {
+      font-size: 11px;
+      color: #bbb;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin: 0 0 1.5rem;
+      text-align: center;
+    }
+
+    .icono {
+      font-size: 52px;
+      margin: 0 0 0.5rem;
+      line-height: 1;
+      display: block;
+      text-align: center;
+    }
+
+    .temperatura {
+      font-family: 'DM Serif Display', serif;
+      font-size: 96px;
+      line-height: 1;
+      color: #111;
+      margin: 0;
+      letter-spacing: -4px;
+      text-align: center;
+    }
+
     .condicion {
-      font-size: 16px;
-      color: #ff2b2b;
-      margin-bottom: 8px;
+      font-size: 14px;
+      color: #e06030;
+      margin: 6px 0 0;
       text-transform: capitalize;
+      font-weight: 400;
+      text-align: center;
     }
 
     .frase {
       font-size: 13px;
-      color: #555;
+      color: #aaa;
       font-style: italic;
-      margin-bottom: 20px;
+      margin: 8px 0 1.75rem;
+      line-height: 1.6;
+      text-align: center;
     }
 
     .stats {
       display: flex;
-      justify-content: space-around;
-      border-top: 1px solid #ddd;
-      padding-top: 16px;
-      margin-top: 4px;
+      justify-content: space-between;
+      border-top: 1px solid #f0f0f0;
+      padding-top: 1rem;
+      margin-bottom: 0;
     }
 
     .stat {
@@ -70,60 +83,103 @@
     }
 
     .stat-valor {
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 500;
       color: #111;
     }
 
     .stat-label {
-      font-size: 11px;
-      color: #555;
+      font-size: 10px;
+      color: #ccc;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-top: 2px;
+      letter-spacing: 0.08em;
+      margin-top: 3px;
+    }
+
+    #prediccion {
+      margin-top: 1rem;
+    }
+
+    .prediccion-fila {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #f0f0f0;
+      padding-top: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .prediccion-dia {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .prediccion-nombre {
+      font-size: 10px;
+      color: #bbb;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .prediccion-icono {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .prediccion-temp {
+      font-size: 13px;
+      font-weight: 500;
+      color: #111;
+    }
+
+    .prediccion-min {
+      font-size: 11px;
+      color: #ccc;
     }
 
     button {
-      margin-top: 16px;
-      padding: 8px 16px;
-      border-radius: 20px;
-      border: 1px solid #ff2b2b;
-      background: transparent;
-      color: #ff2b2b;
-      font-size: 13px;
+      margin-top: 1.25rem;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      color: #e06030;
       cursor: pointer;
+      padding: 0;
+      letter-spacing: 0.05em;
       display: block;
-      width: 100%;
     }
 
     input {
-      margin-top: 10px;
-      padding: 10px 16px;
-      border-radius: 20px;
-      border: 1px solid #ddd;
-      background: #fff;
+      margin-top: 1rem;
+      padding: 6px 0;
+      border: none;
+      border-bottom: 1px solid #eee;
+      background: transparent;
       color: #111;
-      font-size: 14px;
-      text-align: center;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
       outline: none;
-      width: 180px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     input:focus {
-      border-color: #ff2b2b;
+      border-bottom-color: #e06030;
     }
 
     input::placeholder {
-      color: #444;
+      color: #ccc;
     }
-
   </style>
 </head>
 <body>
 
   <div class="tarjeta">
     <p class="ciudad" id="ciudad">--</p>
-    <p class="icono" id="icono">--</p>
+    <span class="icono" id="icono">--</span>
     <p class="temperatura" id="temperatura">--°</p>
     <p class="condicion" id="condicion">--</p>
     <p class="frase" id="frase">--</p>
@@ -145,8 +201,8 @@
 
     <div id="prediccion"></div>
 
-    <button onclick="buscarPorUbicacion()">Usar mi ubicación</button>
-    <input type="text" id="input-ciudad" placeholder="Escribe una ciudad..." />
+    <button onclick="buscarPorUbicacion()">↻ Usar mi ubicación</button>
+    <input type="text" id="input-ciudad" placeholder="Buscar ciudad..." />
   </div>
 
   <script>
@@ -164,12 +220,12 @@
     };
 
     const fondos = {
-      clear:        "#FFD700",
-      clouds:       "#C0C0C0",
-      rain:         "#4682B4",
-      drizzle:      "#87CEEB",
-      thunderstorm: "#4B0082",
-      snow:         "#F0F8FF",
+      clear:        "#FFF9E6",
+      clouds:       "#F5F5F5",
+      rain:         "#EEF2F7",
+      drizzle:      "#F0F5FA",
+      thunderstorm: "#EEEEF5",
+      snow:         "#F5F8FF",
       mist:         "#F5F5F5"
     };
 
@@ -243,7 +299,7 @@
       const dias = Object.values(diasMap).slice(0, 5);
 
       const nombresdia = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-      let htmlDias = `<div style="border-top: 1px solid #ddd; margin-top: 16px; padding-top: 16px;">`;
+      let htmlDias = `<div class="prediccion-fila">`;
       dias.forEach(dia => {
         const fecha = new Date(dia.dt_txt);
         const nombre = nombresdia[fecha.getDay()];
@@ -251,10 +307,11 @@
         const max = Math.round(dia.main.temp_max);
         const min = Math.round(dia.main.temp_min);
         htmlDias += `
-          <div style="display:flex; justify-content:space-between; align-items:center; padding: 6px 0; font-size:13px; color:#111; border-bottom: 1px solid #eee;">
-            <span style="width:30px">${nombre}</span>
-            <span>${iconos[claveDia]}</span>
-            <span style="color:#111">${max}° / <span style="color:#999">${min}°</span></span>
+          <div class="prediccion-dia">
+            <span class="prediccion-nombre">${nombre}</span>
+            <span class="prediccion-icono">${iconos[claveDia]}</span>
+            <span class="prediccion-temp">${max}°</span>
+            <span class="prediccion-min">${min}°</span>
           </div>`;
       });
       htmlDias += `</div>`;
@@ -276,9 +333,7 @@
     });
 
     buscarClima("Barcelona");
-
   </script>
 
 </body>
 </html>
-
