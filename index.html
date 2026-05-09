@@ -23,8 +23,13 @@
       padding: 2rem 1.75rem;
       width: 300px;
       color: #111;
-      transition: background-color 0.8s ease;
+      transition: background-color 0.8s ease, border-color 1.5s ease, color 1.5s ease;
     }
+
+    body.oscuro .tarjeta {
+  border-color: #2a3a5c;
+  color: #f0f0f0;
+}
 
     .contenido {
       transition: opacity 0.3s ease, transform 0.3s ease;
@@ -42,6 +47,11 @@
       letter-spacing: 0.15em;
       margin: 0 0 1.5rem;
       text-align: center;
+      transition: color 1.5s ease;
+    }
+
+    body.oscuro .ciudad {
+      color: #555;
     }
 
     .icono {
@@ -50,11 +60,13 @@
       line-height: 1;
       display: block;
       text-align: center;
-      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+      transform: rotate(0deg) scale(1);
+      opacity: 1;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
     }
 
     .icono.animar {
-      transform: rotate(-15deg) scale(0.7);
+      transform: rotate(-20deg) scale(0.5);
       opacity: 0;
     }
 
@@ -66,6 +78,11 @@
       margin: 0;
       letter-spacing: -4px;
       text-align: center;
+      transition: color 1.5s ease;
+    }
+
+    body.oscuro .temperatura {
+      color: #f0f0f0;
     }
 
     .condicion {
@@ -84,6 +101,11 @@
       margin: 8px 0 1.75rem;
       line-height: 1.6;
       text-align: center;
+      transition: color 1.5s ease;
+    }
+
+    body.oscuro .frase {
+      color: #555;
     }
 
     .stats {
@@ -92,6 +114,11 @@
       border-top: 1px solid #f0f0f0;
       padding-top: 1rem;
       margin-bottom: 0;
+      transition: border-color 1.5s ease;
+    }
+
+    body.oscuro .stats {
+      border-top-color: #1e2433;
     }
 
     .stat {
@@ -102,6 +129,11 @@
       font-size: 15px;
       font-weight: 500;
       color: #111;
+      transition: color 1.5s ease;
+    }
+
+    body.oscuro .stat-valor {
+      color: #f0f0f0;
     }
 
     .stat-label {
@@ -110,6 +142,11 @@
       text-transform: uppercase;
       letter-spacing: 0.08em;
       margin-top: 3px;
+      transition: color 1.5s ease;
+    }
+
+    body.oscuro .stat-label {
+      color: #444;
     }
 
     #prediccion {
@@ -122,6 +159,11 @@
       border-top: 1px solid #f0f0f0;
       padding-top: 0.75rem;
       margin-top: 0.25rem;
+      transition: border-color 1.5s ease;
+    }
+
+    body.oscuro .prediccion-fila {
+      border-top-color: #1e2433;
     }
 
     .prediccion-dia {
@@ -137,6 +179,11 @@
       color: #bbb;
       text-transform: uppercase;
       letter-spacing: 0.08em;
+      transition: color 1.5s ease;
+    }
+
+    body.oscuro .prediccion-nombre {
+      color: #444;
     }
 
     .prediccion-icono {
@@ -148,11 +195,21 @@
       font-size: 13px;
       font-weight: 500;
       color: #111;
+      transition: color 1.5s ease;
+    }
+
+    body.oscuro .prediccion-temp {
+      color: #f0f0f0;
     }
 
     .prediccion-min {
       font-size: 11px;
       color: #ccc;
+      transition: color 1.5s ease;
+    }
+
+    body.oscuro .prediccion-min {
+      color: #444;
     }
 
     button {
@@ -180,6 +237,12 @@
       outline: none;
       width: 100%;
       box-sizing: border-box;
+      transition: border-color 1.5s ease, color 1.5s ease;
+    }
+
+    body.oscuro input {
+      border-bottom-color: #1e2433;
+      color: #f0f0f0;
     }
 
     input:focus {
@@ -188,6 +251,10 @@
 
     input::placeholder {
       color: #ccc;
+    }
+
+    body.oscuro input::placeholder {
+      color: #444;
     }
   </style>
 </head>
@@ -237,7 +304,7 @@
       default:      "🌈"
     };
 
-    const fondos = {
+    const fondosClaro = {
       clear:        "#FFF9E6",
       clouds:       "#F5F5F5",
       rain:         "#EEF2F7",
@@ -246,6 +313,16 @@
       snow:         "#F5F8FF",
       mist:         "#F5F5F5"
     };
+
+    const fondosOscuro = {
+  clear:        "#1a2744",
+  clouds:       "#1c2840",
+  rain:         "#172240",
+  drizzle:      "#172240",
+  thunderstorm: "#12192e",
+  snow:         "#1a2540",
+  mist:         "#1c2840"
+};
 
     function obtenerClave(descripcion) {
       const d = descripcion.toLowerCase();
@@ -259,14 +336,26 @@
       return "default";
     }
 
+    function esNoche(sunrise, sunset) {
+      const ahora = Date.now() / 1000;
+      return ahora < sunrise || ahora > sunset;
+    }
+
+    function aplicarModo(noche) {
+      if (noche) {
+        document.body.classList.add("oscuro");
+      } else {
+        document.body.classList.remove("oscuro");
+      }
+    }
+
     function animarContador(elemento, valorFinal, duracion) {
       const inicio = Date.now();
-      const valorInicial = 0;
 
       function paso() {
         const progreso = Math.min((Date.now() - inicio) / duracion, 1);
         const ease = 1 - Math.pow(1 - progreso, 3);
-        const actual = Math.round(valorInicial + (valorFinal - valorInicial) * ease);
+        const actual = Math.round(valorFinal * ease);
         elemento.textContent = `${actual}°`;
         if (progreso < 1) requestAnimationFrame(paso);
       }
@@ -278,8 +367,8 @@
       const contenido = document.querySelector(".contenido");
       const iconoEl = document.getElementById("icono");
 
-     contenido.classList.remove("oculto");
-      iconoEl.classList.remove("animar");
+      contenido.classList.add("oculto");
+
       let url;
       let urlPrediccion;
 
@@ -297,7 +386,6 @@
       if (datos.cod !== 200) {
         document.getElementById("ciudad").textContent = "Ciudad no encontrada";
         contenido.classList.remove("oculto");
-        iconoEl.classList.remove("animar");
         return;
       }
 
@@ -306,6 +394,8 @@
 
       const clave = obtenerClave(datos.weather[0].main);
       const temp = Math.round(datos.main.temp);
+      const noche = esNoche(datos.sys.sunrise, datos.sys.sunset);
+      const fondos = noche ? fondosOscuro : fondosClaro;
 
       let fraseTemp;
       if (temp > 30) {
@@ -319,14 +409,18 @@
       }
 
       setTimeout(() => {
+        aplicarModo(noche);
+
+        iconoEl.classList.add("animar");
+
         document.getElementById("ciudad").textContent = `${datos.name}, ${datos.sys.country}`;
-        document.getElementById("icono").textContent = iconos[clave];
+        document.getElementById("icono").textContent = noche ? "🌙" : iconos[clave];
         document.getElementById("condicion").textContent = datos.weather[0].description;
         document.getElementById("frase").textContent = fraseTemp;
         document.getElementById("sensacion").textContent = `${Math.round(datos.main.feels_like)}°`;
         document.getElementById("humedad").textContent = `${datos.main.humidity}%`;
         document.getElementById("viento").textContent = `${Math.round(datos.wind.speed * 3.6)} km/h`;
-        document.querySelector(".tarjeta").style.backgroundColor = fondos[clave];
+        document.querySelector(".tarjeta").style.backgroundColor = fondos[clave] || fondos.default;
 
         const diasMap = {};
         datosPrediccion.list.forEach(entry => {
@@ -358,7 +452,10 @@
         document.getElementById("prediccion").innerHTML = htmlDias;
 
         contenido.classList.remove("oculto");
-        iconoEl.classList.remove("animar");
+
+        setTimeout(() => {
+          iconoEl.classList.remove("animar");
+        }, 50);
 
         const tempEl = document.getElementById("temperatura");
         animarContador(tempEl, temp, 600);
