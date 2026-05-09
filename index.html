@@ -23,6 +23,16 @@
       padding: 2rem 1.75rem;
       width: 300px;
       color: #111;
+      transition: background-color 0.8s ease;
+    }
+
+    .contenido {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .contenido.oculto {
+      opacity: 0;
+      transform: translateY(8px);
     }
 
     .ciudad {
@@ -50,6 +60,11 @@
       margin: 0;
       letter-spacing: -4px;
       text-align: center;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .temperatura.animar {
+      transform: scale(1.08);
     }
 
     .condicion {
@@ -178,28 +193,30 @@
 <body>
 
   <div class="tarjeta">
-    <p class="ciudad" id="ciudad">--</p>
-    <span class="icono" id="icono">--</span>
-    <p class="temperatura" id="temperatura">--°</p>
-    <p class="condicion" id="condicion">--</p>
-    <p class="frase" id="frase">--</p>
+    <div class="contenido">
+      <p class="ciudad" id="ciudad">--</p>
+      <span class="icono" id="icono">--</span>
+      <p class="temperatura" id="temperatura">--°</p>
+      <p class="condicion" id="condicion">--</p>
+      <p class="frase" id="frase">--</p>
 
-    <div class="stats">
-      <div class="stat">
-        <div class="stat-valor" id="sensacion">--°</div>
-        <div class="stat-label">Sensación</div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-valor" id="sensacion">--°</div>
+          <div class="stat-label">Sensación</div>
+        </div>
+        <div class="stat">
+          <div class="stat-valor" id="humedad">--%</div>
+          <div class="stat-label">Humedad</div>
+        </div>
+        <div class="stat">
+          <div class="stat-valor" id="viento">-- km/h</div>
+          <div class="stat-label">Viento</div>
+        </div>
       </div>
-      <div class="stat">
-        <div class="stat-valor" id="humedad">--%</div>
-        <div class="stat-label">Humedad</div>
-      </div>
-      <div class="stat">
-        <div class="stat-valor" id="viento">-- km/h</div>
-        <div class="stat-label">Viento</div>
-      </div>
+
+      <div id="prediccion"></div>
     </div>
-
-    <div id="prediccion"></div>
 
     <button onclick="buscarPorUbicacion()">↻ Usar mi ubicación</button>
     <input type="text" id="input-ciudad" placeholder="Buscar ciudad..." />
@@ -242,6 +259,11 @@
     }
 
     async function buscarClima(ciudad, lat, lon) {
+      const contenido = document.querySelector(".contenido");
+
+      // Fade out
+      contenido.classList.add("oculto");
+
       let url;
       let urlPrediccion;
 
@@ -258,6 +280,7 @@
 
       if (datos.cod !== 200) {
         document.getElementById("ciudad").textContent = "Ciudad no encontrada";
+        contenido.classList.remove("oculto");
         return;
       }
 
@@ -278,44 +301,56 @@
         fraseTemp = "El café ya no es bebida, es supervivencia";
       }
 
-      document.getElementById("ciudad").textContent = `${datos.name}, ${datos.sys.country}`;
-      document.getElementById("icono").textContent = iconos[clave];
-      document.getElementById("temperatura").textContent = `${temp}°`;
-      document.getElementById("condicion").textContent = datos.weather[0].description;
-      document.getElementById("frase").textContent = fraseTemp;
-      document.getElementById("sensacion").textContent = `${Math.round(datos.main.feels_like)}°`;
-      document.getElementById("humedad").textContent = `${datos.main.humidity}%`;
-      document.getElementById("viento").textContent = `${Math.round(datos.wind.speed * 3.6)} km/h`;
-      document.querySelector(".tarjeta").style.backgroundColor = fondos[clave];
+      // Esperar a que termine el fade out antes de actualizar
+      setTimeout(() => {
+        document.getElementById("ciudad").textContent = `${datos.name}, ${datos.sys.country}`;
+        document.getElementById("icono").textContent = iconos[clave];
+        document.getElementById("temperatura").textContent = `${temp}°`;
+        document.getElementById("condicion").textContent = datos.weather[0].description;
+        document.getElementById("frase").textContent = fraseTemp;
+        document.getElementById("sensacion").textContent = `${Math.round(datos.main.feels_like)}°`;
+        document.getElementById("humedad").textContent = `${datos.main.humidity}%`;
+        document.getElementById("viento").textContent = `${Math.round(datos.wind.speed * 3.6)} km/h`;
+        document.querySelector(".tarjeta").style.backgroundColor = fondos[clave];
 
-      const diasMap = {};
-      datosPrediccion.list.forEach(entry => {
-        const fecha = entry.dt_txt.split(" ")[0];
-        const hora = entry.dt_txt.split(" ")[1];
-        if (hora === "12:00:00" && !diasMap[fecha]) {
-          diasMap[fecha] = entry;
-        }
-      });
-      const dias = Object.values(diasMap).slice(0, 5);
+        const diasMap = {};
+        datosPrediccion.list.forEach(entry => {
+          const fecha = entry.dt_txt.split(" ")[0];
+          const hora = entry.dt_txt.split(" ")[1];
+          if (hora === "12:00:00" && !diasMap[fecha]) {
+            diasMap[fecha] = entry;
+          }
+        });
+        const dias = Object.values(diasMap).slice(0, 5);
 
-      const nombresdia = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-      let htmlDias = `<div class="prediccion-fila">`;
-      dias.forEach(dia => {
-        const fecha = new Date(dia.dt_txt);
-        const nombre = nombresdia[fecha.getDay()];
-        const claveDia = obtenerClave(dia.weather[0].main);
-        const max = Math.round(dia.main.temp_max);
-        const min = Math.round(dia.main.temp_min);
-        htmlDias += `
-          <div class="prediccion-dia">
-            <span class="prediccion-nombre">${nombre}</span>
-            <span class="prediccion-icono">${iconos[claveDia]}</span>
-            <span class="prediccion-temp">${max}°</span>
-            <span class="prediccion-min">${min}°</span>
-          </div>`;
-      });
-      htmlDias += `</div>`;
-      document.getElementById("prediccion").innerHTML = htmlDias;
+        const nombresdia = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+        let htmlDias = `<div class="prediccion-fila">`;
+        dias.forEach(dia => {
+          const fecha = new Date(dia.dt_txt);
+          const nombre = nombresdia[fecha.getDay()];
+          const claveDia = obtenerClave(dia.weather[0].main);
+          const max = Math.round(dia.main.temp_max);
+          const min = Math.round(dia.main.temp_min);
+          htmlDias += `
+            <div class="prediccion-dia">
+              <span class="prediccion-nombre">${nombre}</span>
+              <span class="prediccion-icono">${iconos[claveDia]}</span>
+              <span class="prediccion-temp">${max}°</span>
+              <span class="prediccion-min">${min}°</span>
+            </div>`;
+        });
+        htmlDias += `</div>`;
+        document.getElementById("prediccion").innerHTML = htmlDias;
+
+        // Fade in
+        contenido.classList.remove("oculto");
+
+        // Rebote en la temperatura
+        const tempEl = document.getElementById("temperatura");
+        tempEl.classList.add("animar");
+        setTimeout(() => tempEl.classList.remove("animar"), 400);
+
+      }, 300);
     }
 
     function buscarPorUbicacion() {
