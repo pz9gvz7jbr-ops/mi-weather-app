@@ -50,6 +50,12 @@
       line-height: 1;
       display: block;
       text-align: center;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    }
+
+    .icono.animar {
+      transform: rotate(-15deg) scale(0.7);
+      opacity: 0;
     }
 
     .temperatura {
@@ -60,11 +66,6 @@
       margin: 0;
       letter-spacing: -4px;
       text-align: center;
-      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .temperatura.animar {
-      transform: scale(1.08);
     }
 
     .condicion {
@@ -258,12 +259,27 @@
       return "default";
     }
 
+    function animarContador(elemento, valorFinal, duracion) {
+      const inicio = Date.now();
+      const valorInicial = 0;
+
+      function paso() {
+        const progreso = Math.min((Date.now() - inicio) / duracion, 1);
+        const ease = 1 - Math.pow(1 - progreso, 3);
+        const actual = Math.round(valorInicial + (valorFinal - valorInicial) * ease);
+        elemento.textContent = `${actual}°`;
+        if (progreso < 1) requestAnimationFrame(paso);
+      }
+
+      requestAnimationFrame(paso);
+    }
+
     async function buscarClima(ciudad, lat, lon) {
       const contenido = document.querySelector(".contenido");
+      const iconoEl = document.getElementById("icono");
 
-      // Fade out
-      contenido.classList.add("oculto");
-
+     contenido.classList.remove("oculto");
+      iconoEl.classList.remove("animar");
       let url;
       let urlPrediccion;
 
@@ -281,6 +297,7 @@
       if (datos.cod !== 200) {
         document.getElementById("ciudad").textContent = "Ciudad no encontrada";
         contenido.classList.remove("oculto");
+        iconoEl.classList.remove("animar");
         return;
       }
 
@@ -301,11 +318,9 @@
         fraseTemp = "El café ya no es bebida, es supervivencia";
       }
 
-      // Esperar a que termine el fade out antes de actualizar
       setTimeout(() => {
         document.getElementById("ciudad").textContent = `${datos.name}, ${datos.sys.country}`;
         document.getElementById("icono").textContent = iconos[clave];
-        document.getElementById("temperatura").textContent = `${temp}°`;
         document.getElementById("condicion").textContent = datos.weather[0].description;
         document.getElementById("frase").textContent = fraseTemp;
         document.getElementById("sensacion").textContent = `${Math.round(datos.main.feels_like)}°`;
@@ -342,13 +357,11 @@
         htmlDias += `</div>`;
         document.getElementById("prediccion").innerHTML = htmlDias;
 
-        // Fade in
         contenido.classList.remove("oculto");
+        iconoEl.classList.remove("animar");
 
-        // Rebote en la temperatura
         const tempEl = document.getElementById("temperatura");
-        tempEl.classList.add("animar");
-        setTimeout(() => tempEl.classList.remove("animar"), 400);
+        animarContador(tempEl, temp, 600);
 
       }, 300);
     }
