@@ -2,6 +2,8 @@
 <html lang="es">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
   <title>Mi Weather App</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Serif+Display&display=swap');
@@ -483,6 +485,10 @@
     });
 
     buscarClima("Barcelona");
+   
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+}
   </script>
 
 </body>
